@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light">
+<title>Unicorn Science Quest — Class 1</title>
+<style>
+  :root{
+    --bg1:#3a1f63; --bg2:#6a2f8f; --card:#fff7fc; --ink:#3a1750;
+    --gold:#ffd166; --gold2:#f4a300; --pink:#ff7ab8; --pink2:#ffa6d3;
+    --purple:#9b5de5; --purple2:#c08cf0;
+    --green:#2ec47a; --green-bg:#e6fbf0; --red:#ff5d7a; --red-bg:#ffe9ee;
+    --muted:#7a6390; --line:#f0ddf4;
+    --easy:#3dd6c0; --med:#ffb238; --hard:#ff7ab8; --hardest:#ff5d7a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:'Trebuchet MS','Segoe UI',Verdana,system-ui,sans-serif;
+    color:var(--ink);
+    background-color:var(--bg1);
+    background-image:
+      radial-gradient(1100px 560px at 15% -10%,#8a3fae 0%,transparent 60%),
+      radial-gradient(900px 500px at 100% 0%,#b34fd1 0%,transparent 55%),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+    padding:18px 12px 50px;
+    width:100%;
+    overflow-x:hidden;
+  }
+  .sky{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .sky span{position:absolute;top:-30px;font-size:18px;opacity:.55;animation:fall linear infinite;}
+  @keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:0;}10%{opacity:.6;}100%{transform:translateY(108vh) rotate(180deg);opacity:0;}}
+  .wrap{max-width:720px;margin:0 auto;position:relative;z-index:1;width:100%;}
+
+  .crest{font-size:clamp(34px,9vw,46px);text-align:center;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));}
+  h1{font-size:clamp(22px,5.5vw,30px);text-align:center;color:#fff;margin:6px 0 2px;letter-spacing:.3px;
+     text-shadow:0 2px 14px rgba(255,122,184,.6);word-wrap:break-word;}
+  .sub{text-align:center;color:#f3e3fb;margin:0 0 16px;font-size:clamp(13px,3.4vw,15px);padding:0 4px;}
+
+  .panel{background:var(--card);border-radius:20px;padding:clamp(16px,4vw,26px) clamp(14px,4vw,24px);
+         box-shadow:0 18px 50px rgba(30,5,45,.5);border:2px solid rgba(255,255,255,.6);
+         width:100%;max-width:100%;}
+
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .bar{flex:1 1 140px;height:14px;background:var(--line);border-radius:99px;overflow:hidden;min-width:90px;}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--pink2),var(--purple));border-radius:99px;transition:width .4s;}
+  .scorechip{background:var(--bg2);color:var(--gold);font-weight:bold;border-radius:99px;padding:5px 12px;font-size:13px;white-space:nowrap;flex-shrink:0;}
+
+  .tags{margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .conceptTag{display:inline-block;background:#f3e8fc;color:var(--purple);font-size:12px;border-radius:99px;padding:4px 11px;font-weight:bold;max-width:100%;word-break:break-word;}
+  .diffTag{display:inline-block;color:#fff;font-size:11px;border-radius:99px;padding:4px 11px;font-weight:bold;letter-spacing:.3px;white-space:nowrap;}
+  .diffTag.easy{background:var(--easy);} .diffTag.med{background:var(--med);color:#5a3d00;} .diffTag.hard{background:var(--hard);} .diffTag.hardest{background:var(--hardest);}
+
+  .qtext{font-size:clamp(17px,4.6vw,20px);line-height:1.45;margin:6px 0 14px;font-weight:bold;word-wrap:break-word;}
+  .qtext .big{font-family:'Courier New',monospace;background:#f3e8fc;padding:1px 8px;border-radius:7px;}
+
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;
+       padding:12px 14px;margin:8px 0;font-size:clamp(15px,3.8vw,17px);cursor:pointer;transition:all .15s;
+       color:var(--ink);font-family:inherit;word-wrap:break-word;}
+  .opt:hover{border-color:var(--purple2);background:#fbf5ff;}
+  .opt.sel{border-color:var(--purple);background:#f4ecff;}
+  .opt.correct{border-color:var(--green);background:var(--green-bg);}
+  .opt.wrong{border-color:var(--red);background:var(--red-bg);}
+  .opt.disabled{pointer-events:none;}
+  .optkey{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;
+          background:#f3e8fc;border-radius:50%;font-weight:bold;margin-right:9px;color:var(--purple);font-size:13px;}
+
+  input.text{width:100%;padding:13px 14px;font-size:clamp(15px,3.8vw,17px);border:2px solid var(--line);
+             border-radius:14px;font-family:inherit;color:var(--ink);-webkit-appearance:none;appearance:none;}
+  input.text:focus{outline:none;border-color:var(--purple);}
+
+  .btn{background:linear-gradient(180deg,var(--purple2),var(--purple));color:#fff;border:none;border-radius:14px;
+       padding:12px 22px;font-size:clamp(14px,3.6vw,16px);font-weight:bold;cursor:pointer;font-family:inherit;
+       box-shadow:0 6px 16px rgba(155,93,229,.4);transition:transform .12s;-webkit-appearance:none;appearance:none;}
+  .btn:active{transform:translateY(1px);}
+  .btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#5a3d00;box-shadow:0 6px 16px rgba(244,163,0,.45);}
+  .btn:disabled{opacity:.4;cursor:default;transform:none;}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap;}
+  .qnum{color:var(--muted);font-size:13px;font-weight:bold;}
+
+  .feedback{border-radius:14px;padding:13px 15px;margin-top:14px;font-size:14px;line-height:1.5;display:none;word-wrap:break-word;}
+  .feedback.show{display:block;animation:pop .3s;}
+  @keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .feedback.ok{background:var(--green-bg);border:2px solid var(--green);}
+  .feedback.no{background:var(--red-bg);border:2px solid var(--red);}
+  .feedback b{font-size:15px;} .feedback .ans{font-family:'Courier New',monospace;background:#fff;padding:1px 6px;border-radius:6px;}
+
+  .center{text-align:center;} .center p{font-size:15px;line-height:1.6;color:var(--ink);}
+  .pill{display:inline-block;background:#f3e8fc;border-radius:99px;padding:7px 14px;margin:4px;font-size:13px;color:var(--purple);font-weight:bold;}
+  .scoreBig{font-size:clamp(40px,11vw,54px);font-weight:bold;color:var(--gold2);margin:6px 0;}
+
+  .reportItem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin:8px 0;
+              border:2px solid var(--line);background:#fff;flex-wrap:wrap;}
+  .reportItem .nm{flex:1 1 120px;font-weight:bold;font-size:14px;min-width:0;word-wrap:break-word;}
+  .reportItem .mini{height:9px;flex:1 1 70px;max-width:100px;min-width:50px;background:var(--line);border-radius:99px;overflow:hidden;}
+  .reportItem .mini i{display:block;height:100%;border-radius:99px;}
+  .reportItem .pct{width:42px;text-align:right;font-weight:bold;font-size:13px;flex-shrink:0;}
+  .badge{font-size:11px;font-weight:bold;border-radius:99px;padding:3px 9px;white-space:nowrap;flex-shrink:0;}
+  .badge.strong{background:var(--green-bg);color:#10895a;}
+  .badge.ok{background:#fff3da;color:#a9760a;}
+  .badge.weak{background:var(--red-bg);color:#c8345b;}
+
+  .secTitle{font-size:clamp(16px,4.2vw,18px);color:var(--ink);margin:20px 0 6px;font-weight:bold;}
+  .note{font-size:13.5px;color:var(--muted);line-height:1.55;}
+  .parentBox{background:#f8effe;border:2px dashed var(--purple2);border-radius:16px;padding:14px 16px;margin-top:10px;}
+  .parentBox h3{margin:0 0 8px;font-size:15px;color:var(--purple);}
+  .parentBox ul{margin:6px 0 0;padding-left:18px;} .parentBox li{margin:6px 0;font-size:13.5px;line-height:1.55;word-wrap:break-word;}
+  .hidden{display:none !important;}
+  .nameField{max-width:340px;margin:14px auto 0;width:100%;}
+  .nameField label{display:block;font-size:14px;font-weight:bold;color:var(--ink);margin-bottom:6px;}
+  .errline{color:var(--red);font-size:13px;margin-top:6px;min-height:16px;}
+  .diffLegend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0 4px;}
+  .diffLegend span{font-size:12.5px;font-weight:bold;display:inline-flex;align-items:center;}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;flex-shrink:0;}
+
+  @media (max-width:420px){
+    .panel{border-radius:16px;}
+    .reportItem .nm{flex:1 1 100%;}
+    .reportItem .pct{order:3;}
+  }
+  @media (max-width:360px){
+    .scorechip{font-size:12px;padding:4px 9px;}
+  }
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<div class="wrap">
+  <div class="crest">🦄🌈</div>
+  <h1>Unicorn Science Quest</h1>
+  <p class="sub">A magical Science revision adventure — Living &amp; Non-living Things and Our Body 🧠✨</p>
+
+  <div class="panel center" id="startScreen">
+    <div style="font-size:38px">🦄</div>
+    <h2 style="margin:6px 0 2px;color:var(--ink);font-size:clamp(18px,4.8vw,21px)">Welcome, little explorer!</h2>
+    <p class="note" style="font-size:15px;color:var(--ink)">30 fun questions about living &amp; non-living things,
+       natural &amp; man-made things, and our amazing body. The questions get trickier as you go through four magical lands:</p>
+    <div class="diffLegend">
+      <span><span class="dot" style="background:var(--easy)"></span>🌸 Rainbow Meadow (easy)</span>
+      <span><span class="dot" style="background:var(--med)"></span>🦄 Unicorn Forest (medium)</span>
+      <span><span class="dot" style="background:var(--hard)"></span>✨ Sparkle Mountain (hard)</span>
+      <span><span class="dot" style="background:var(--hardest)"></span>🌟 Stardust Castle (hardest)</span>
+    </div>
+    <div class="nameField">
+      <label for="nameInput">What's your name, explorer?</label>
+      <input class="text" id="nameInput" autocomplete="off" maxlength="24" placeholder="Type your name..."
+             onkeydown="if(event.key==='Enter'){event.preventDefault();start();}">
+      <div class="errline" id="nameErr"></div>
+    </div>
+    <p class="note">📖 Read each question carefully. Tap an answer or type it, then press <b>Check ✦</b> for instant feedback.
+       Collect a 🦄 sparkle for every correct answer!</p>
+    <div style="margin-top:6px"><button class="btn gold" onclick="start()">Start the Quest →</button></div>
+  </div>
+
+  <div class="panel hidden" id="quizScreen">
+    <div class="topbar">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="scorechip" id="scoreChip">🦄 0</div>
+    </div>
+    <div id="qbody"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="row">
+      <div class="qnum" id="qcount"></div>
+      <div>
+        <button class="btn" id="checkBtn" onclick="check()">Check ✦</button>
+        <button class="btn gold hidden" id="nextBtn" onclick="next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="resultScreen"></div>
+</div>
+
+<script>
+function norm(s){return String(s).toLowerCase().replace(/\s+/g," ").replace(/[.''",!?]+$/,"").trim();}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* difficulty: 'easy' | 'med' | 'hard' | 'hardest' ; type: 'mcq' | 'text' */
+const QUESTIONS = [
+{"diff":"easy","concept":"Living vs Non-living","type":"mcq","q":"Which of these is a <b>LIVING</b> thing?","options":["Dog","Chair","Table","Book"],"answer":0,"ex":"A dog is living — it moves, breathes, eats and grows on its own. Chairs, tables and books are non-living."},
+{"diff":"easy","concept":"Living vs Non-living","type":"mcq","q":"Which of these is a <b>NON-LIVING</b> thing?","options":["Cat","Ball","Bird","Plant"],"answer":1,"ex":"A ball is non-living — it cannot move, eat or grow on its own. Cats, birds and plants are all living things."},
+{"diff":"easy","concept":"Characteristics of Living Things","type":"text","q":"Fill in the blank: Living things ____ on their own.","accept":["move","moves"],"ex":"Living things can <span class='ans'>move</span> from one place to another all by themselves."},
+{"diff":"easy","concept":"Characteristics of Living Things","type":"mcq","q":"Living things need air, water and ____ to live.","options":["Toys","Money","Food","Cars"],"answer":2,"ex":"Living things need air, water and food to stay alive and grow."},
+{"diff":"easy","concept":"Natural Things","type":"mcq","q":"Which of these is a <b>NATURAL</b> thing?","options":["Car","Chair","Book","Sun"],"answer":3,"ex":"The sun is found in nature, so it is a natural thing. Cars, chairs and books are man-made."},
+{"diff":"easy","concept":"Man-made Things","type":"mcq","q":"Which of these is <b>MAN-MADE</b>?","options":["Train","Rock","Moon","Water"],"answer":0,"ex":"A train is made by people, so it is man-made. Rocks, the moon and water are natural things."},
+{"diff":"easy","concept":"Senses — Sight","type":"text","q":"Fill in the blank: We see with our ____.","accept":["eyes","eye"],"ex":"We see with our <span class='ans'>eyes</span>!"},
+{"diff":"easy","concept":"Senses — Hearing","type":"mcq","q":"We hear with our:","options":["Nose","Ears","Eyes","Skin"],"answer":1,"ex":"We hear sounds with our ears."},
+{"diff":"easy","concept":"Senses — Smell","type":"text","q":"Fill in the blank: We smell with our ____.","accept":["nose"],"ex":"We smell things with our <span class='ans'>nose</span>."},
+{"diff":"easy","concept":"Senses — Taste","type":"mcq","q":"We taste food with our:","options":["Skin","Hands","Tongue","Ears"],"answer":2,"ex":"We taste food with our tongue — sweet, sour, salty or bitter!"},
+{"diff":"med","concept":"Characteristics of Living Things","type":"mcq","q":"Which of these is something that <b>ALL</b> living things do?","options":["Fly","Swim","Bark","Breathe"],"answer":3,"ex":"Not all living things fly, swim or bark — but every living thing breathes."},
+{"diff":"med","concept":"Characteristics of Non-living Things","type":"text","q":"Fill in the blank: Non-living things cannot move, eat or ____ on their own.","accept":["grow"],"ex":"Non-living things cannot move, eat or <span class='ans'>grow</span> by themselves."},
+{"diff":"med","concept":"Natural vs Man-made (Reasoning)","type":"mcq","q":"Toys, books and clothes are man-made because:","options":["They are made by people","They grow in nature","They can move on their own","They need food"],"answer":0,"ex":"Man-made things are things that people make, like toys, books and clothes."},
+{"diff":"med","concept":"Hands & Their Uses","type":"mcq","q":"Which activity do we do with our <b>HANDS</b>?","options":["Walk","Write","Smell","Hear"],"answer":1,"ex":"Our hands help us to eat, clap, write and hold things."},
+{"diff":"med","concept":"Legs & Their Uses","type":"mcq","q":"Which of these do our <b>LEGS</b> help us do?","options":["Clap","Talk","Run","Smell"],"answer":2,"ex":"Our legs help us to walk, run, skip and kick."},
+{"diff":"med","concept":"Mouth & Neck","type":"text","q":"Fill in the blank: We use our mouth to eat and ____.","accept":["talk"],"ex":"We use our mouth to eat and <span class='ans'>talk</span>."},
+{"diff":"med","concept":"Mouth & Neck","type":"mcq","q":"Our neck helps which body part to move?","options":["Hand","Foot","Eye","Head"],"answer":3,"ex":"Our neck helps our head to move."},
+{"diff":"med","concept":"Senses — Touch","type":"mcq","q":"Which sense organ do we use to <b>FEEL</b> a soft toy?","options":["Skin","Eyes","Ears","Tongue"],"answer":0,"ex":"We touch and feel things with our skin."},
+{"diff":"med","concept":"Five Sense Organs","type":"text","q":"Fill in the blank: We have ____ sense organs.","accept":["five","5"],"ex":"We have <span class='ans'>five</span> sense organs: eyes, ears, nose, tongue and skin."},
+{"diff":"med","concept":"Growing Up","type":"mcq","q":"As we grow older, we become:","options":["Shorter and lighter","Taller and heavier","The same size always","Smaller"],"answer":1,"ex":"As we grow, we become taller and heavier — like a baby growing into a boy or girl, then an adult."},
+{"diff":"hard","concept":"Living/Non-living Reasoning","type":"mcq","q":"Navya's dog runs around, but her teddy bear does not move at all. This is because:","options":["The teddy bear is broken","The dog is non-living","The dog is a living thing and the teddy bear is non-living","The teddy bear is alive too"],"answer":2,"ex":"The dog is living — it can move on its own. The teddy bear is non-living, so it cannot move by itself."},
+{"diff":"hard","concept":"Living/Non-living Reasoning","type":"mcq","q":"Which one of these CANNOT be done by a non-living thing?","options":["Sit still","Stay in a cupboard","Be touched","Grow and have babies of its own"],"answer":3,"ex":"Only living things can grow and produce more of their own kind. Non-living things just stay as they are."},
+{"diff":"hard","concept":"Fun Body Facts","type":"text","q":"Fill in the blank: The only body part that cannot repair itself is the ____.","accept":["tooth","teeth"],"ex":"The <span class='ans'>tooth</span> is the only part of our body that cannot repair itself — so we must take good care of our teeth!"},
+{"diff":"hard","concept":"Fun Body Facts","type":"text","q":"Fill in the blank: The largest sense organ in our body is the ____.","accept":["skin"],"ex":"Our <span class='ans'>skin</span> is the largest sense organ in our whole body."},
+{"diff":"hard","concept":"Hands & Legs Together","type":"mcq","q":"Which body parts do we use TOGETHER to swim and dance?","options":["Hands and legs","Eyes and ears","Nose and tongue","Skin and hair"],"answer":0,"ex":"We use both our hands and legs together to swim and dance."},
+{"diff":"hard","concept":"Living vs Non-living","type":"mcq","q":"True or False: All living things are natural things.","options":["True","False"],"answer":0,"ex":"True! Every living thing — plants, animals and people — is a natural thing. But not every natural thing is alive (like rocks and water)."},
+{"diff":"hardest","concept":"Senses — Touch (Reasoning)","type":"mcq","q":"Ria touches a hot cup by mistake. What will she feel right away?","options":["Nothing at all","Pain, because her skin helps her feel things","A nice cool feeling","She will not notice"],"answer":1,"ex":"Our skin helps us feel things, including heat and pain — so Ria will quickly feel the hot cup and pull her hand away."},
+{"diff":"hardest","concept":"Living/Non-living Reasoning","type":"mcq","q":"A rock sits in the garden for years without changing. A plant in the same garden grows taller every year. What does this tell us?","options":["Both are non-living","The rock is living and the plant is not","The plant is a living thing and the rock is non-living","Rocks and plants are the same"],"answer":2,"ex":"Growing is a sign of being alive. The plant grows, so it is living; the rock does not grow or change, so it is non-living."},
+{"diff":"hardest","concept":"Living/Non-living Reasoning","type":"text","q":"Fill in the blank: A teddy bear cannot eat, breathe or grow because it is a ____ thing.","accept":["non-living","nonliving","non living"],"ex":"A teddy bear is a <span class='ans'>non-living</span> thing, so it cannot eat, breathe, feel or grow like living things do."},
+{"diff":"hardest","concept":"Natural vs Man-made (Reasoning)","type":"mcq","q":"Which set correctly groups things by NATURAL vs MAN-MADE?","options":["Natural: chair, car | Man-made: sun, rock","Natural: train, book | Man-made: moon, sun","Natural: clothes, paper | Man-made: rocks, water","Natural: sun, water | Man-made: chair, train"],"answer":3,"ex":"Sun and water are found in nature (natural). Chair and train are made by people (man-made)."}
+];
+
+/* ---------- floating unicorn sparkles ---------- */
+(function(){
+  const sky=document.getElementById('sky');
+  const icons=['🦄','✨','🌈','⭐','💫'];
+  for(let i=0;i<16;i++){
+    const e=document.createElement('span');
+    e.textContent=icons[Math.floor(Math.random()*icons.length)];
+    e.style.left=Math.random()*96+'%';
+    e.style.fontSize=(14+Math.random()*16)+'px';
+    e.style.animationDuration=(8+Math.random()*10)+'s';
+    e.style.animationDelay=(Math.random()*10)+'s';
+    sky.appendChild(e);
+  }
+})();
+
+let idx=0, sparkles=0, answered=false, picked=null, childName="Explorer";
+const results=[];
+const DIFFLABEL={easy:"Rainbow Meadow", med:"Unicorn Forest", hard:"Sparkle Mountain", hardest:"Stardust Castle"};
+const DIFFWORD={easy:"easy", med:"medium", hard:"hard", hardest:"hardest"};
+
+function start(){
+  const inp=document.getElementById('nameInput');
+  const val=(inp.value||"").trim();
+  if(val===""){
+    document.getElementById('nameErr').textContent='Please type your name to begin.';
+    inp.focus(); return;
+  }
+  childName=esc(val);
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');
+  render();
+}
+
+function render(){
+  answered=false; picked=null;
+  const q=QUESTIONS[idx];
+  document.getElementById('fill').style.width=((idx)/QUESTIONS.length*100)+'%';
+  document.getElementById('scoreChip').textContent='🦄 '+sparkles;
+  document.getElementById('qcount').textContent='Question '+(idx+1)+' of '+QUESTIONS.length;
+  let html='<div class="tags"><span class="conceptTag">'+q.concept+'</span>'+
+           '<span class="diffTag '+q.diff+'">'+DIFFLABEL[q.diff].toUpperCase()+'</span></div>'+
+           '<div class="qtext">'+q.q+'</div>';
+  if(q.type==='mcq'){
+    q.options.forEach(function(o,i){var key=String.fromCharCode(65+i);
+      html+='<button class="opt" data-i="'+i+'" onclick="pick(this)"><span class="optkey">'+key+'</span>'+o+'</button>';});
+  } else {
+    html+='<input class="text" id="answerInput" autocomplete="off" placeholder="Type your answer..." '+
+          'onkeydown="if(event.key===\'Enter\'){event.preventDefault();check();}">';
+  }
+  document.getElementById('qbody').innerHTML=html;
+  const fb=document.getElementById('fb'); fb.className='feedback'; fb.innerHTML='';
+  document.getElementById('checkBtn').classList.remove('hidden');
+  document.getElementById('checkBtn').disabled=false;
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('nextBtn').textContent=(idx===QUESTIONS.length-1)?'See My Report 📊':'Next →';
+  const inp=document.getElementById('answerInput'); if(inp) inp.focus();
+}
+
+function pick(el){if(answered)return;picked=parseInt(el.dataset.i,10);document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('sel');});el.classList.add('sel');}
+
+function check(){
+  if(answered)return;
+  const q=QUESTIONS[idx]; let correct=false, given='';
+  if(q.type==='mcq'){
+    if(picked===null){shake();return;}
+    given=q.options[picked]; correct=(picked===q.answer);
+    document.querySelectorAll('.opt').forEach(function(o,i){o.classList.add('disabled');
+      if(i===q.answer)o.classList.add('correct'); if(i===picked&&!correct)o.classList.add('wrong');});
+  } else {
+    const inp=document.getElementById('answerInput'); given=inp.value;
+    if(norm(given)===''){shake();return;}
+    const n=norm(given); correct=q.accept.some(function(a){return norm(a)===n;});
+    inp.disabled=true; inp.style.borderColor=correct?'var(--green)':'var(--red)';
+  }
+  answered=true;
+  results.push({concept:q.concept, diff:q.diff, correct:correct});
+  if(correct)sparkles+=10;
+  document.getElementById('scoreChip').textContent='🦄 '+sparkles;
+  const fb=document.getElementById('fb');
+  if(correct){fb.className='feedback ok show';fb.innerHTML='<b>🌟 Magical! Correct!</b> +10 🦄<br>'+q.ex;}
+  else{fb.className='feedback no show';
+    const ya=(q.type==='mcq')?('<span class="ans">'+esc(given)+'</span>'):('"<span class="ans">'+esc(given||'(blank)')+'</span>"');
+    fb.innerHTML='<b>Almost — here\'s the magic answer:</b><br>You answered '+ya+'.<br>'+q.ex;}
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').focus();
+}
+function shake(){const b=document.getElementById('checkBtn');b.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:250});}
+function next(){idx++; if(idx>=QUESTIONS.length){showResult();return;} render();}
+
+function showResult(){
+  document.getElementById('quizScreen').classList.add('hidden');
+  const el=document.getElementById('resultScreen'); el.classList.remove('hidden');
+  const total=QUESTIONS.length, got=results.filter(function(r){return r.correct;}).length, pct=Math.round(got/total*100);
+  const nm=childName;
+
+  const diffs={easy:{c:0,t:0},med:{c:0,t:0},hard:{c:0,t:0},hardest:{c:0,t:0}};
+  results.forEach(function(r){diffs[r.diff].t++; if(r.correct)diffs[r.diff].c++;});
+  const cAgg={};
+  results.forEach(function(r){cAgg[r.concept]=cAgg[r.concept]||{c:0,t:0};cAgg[r.concept].t++;if(r.correct)cAgg[r.concept].c++;});
+
+  let emoji,msg;
+  if(pct>=90){emoji='🏆🦄';msg='Incredible questing, '+nm+'! You explored the whole magical kingdom like a true Unicorn Scholar!';}
+  else if(pct>=70){emoji='🌟🌈';msg='Great quest, '+nm+' — really strong work! A few sparkles left to collect below.';}
+  else if(pct>=50){emoji='💪✨';msg='Good adventuring, '+nm+'! The report below shows which lands to revisit.';}
+  else {emoji='🌱🦄';msg='Nice first quest, '+nm+' — the report below shows exactly what to practise next.';}
+
+  let html='<div class="center"><div style="font-size:42px">'+emoji+'</div>'+
+    '<h2 style="margin:4px 0;color:var(--ink);font-size:clamp(18px,4.8vw,22px)">'+nm+'\'s Magical Report</h2>'+
+    '<div class="scoreBig">'+got+' / '+total+'</div>'+
+    '<div class="pill">🦄 '+sparkles+' Sparkles</div> <div class="pill">'+pct+'% correct</div>'+
+    '<p style="margin-top:10px">'+msg+'</p></div>';
+
+  html+='<div class="secTitle">🗺️ How they did by land (difficulty)</div>';
+  ['easy','med','hard','hardest'].forEach(function(d){
+    const x=diffs[d]; const p=x.t?Math.round(x.c/x.t*100):0;
+    const color='var(--'+d+')';
+    html+='<div class="reportItem"><div class="nm">'+DIFFLABEL[d]+' ('+DIFFWORD[d]+')</div>'+
+          '<div class="mini"><i style="width:'+p+'%;background:'+color+'"></i></div>'+
+          '<div class="pct">'+x.c+'/'+x.t+'</div></div>';
+  });
+
+  html+='<div class="secTitle">👨‍👩‍👧 Parent Report — concept by concept</div>';
+  html+='<p class="note">Each topic from the chapters is marked below. <b style="color:#c8345b">Practise</b> = needs focused study, '+
+        '<b style="color:#a9760a">Almost</b> = nearly there, <b style="color:#10895a">Strong</b> = solid.</p>';
+  const order=Object.keys(cAgg).sort(function(a,b){return (cAgg[a].c/cAgg[a].t)-(cAgg[b].c/cAgg[b].t);});
+  order.forEach(function(cn){
+    const d=cAgg[cn]; const p=Math.round(d.c/d.t*100);
+    let badge,cls,color;
+    if(p>=100){badge='Strong ⭐';cls='strong';color='var(--green)';}
+    else if(p>=50){badge='Almost';cls='ok';color='var(--gold2)';}
+    else {badge='Practise';cls='weak';color='var(--red)';}
+    html+='<div class="reportItem"><div class="nm">'+cn+'</div>'+
+          '<div class="mini"><i style="width:'+p+'%;background:'+color+'"></i></div>'+
+          '<div class="pct">'+d.c+'/'+d.t+'</div>'+
+          '<span class="badge '+cls+'">'+badge+'</span></div>';
+  });
+
+  const trueWeak=order.filter(function(cn){return Math.round(cAgg[cn].c/cAgg[cn].t*100)<50;});
+  const partial=order.filter(function(cn){var p=Math.round(cAgg[cn].c/cAgg[cn].t*100);return p>=50&&p<100;});
+  html+='<div class="parentBox"><h3>📌 How to study this together</h3>';
+  if(trueWeak.length===0&&partial.length===0){
+    html+='<p class="note" style="margin:0">🎉 '+nm+' answered <b>every concept correctly</b>. The whole revision looks solid — '+
+          'you could move on, or re-run this quest for speed and confidence.</p>';
+  } else {
+    html+='<ul>';
+    if(trueWeak.length){html+='<li><b>Focus first (weak):</b> '+trueWeak.join('; ')+'. Open the chapter to these topics, read them together, then redo this quiz.</li>';}
+    if(partial.length){html+='<li><b>Quick review (almost there):</b> '+partial.join('; ')+'. A short recap should lock these in.</li>';}
+    html+='<li>Tip: ask your child to <i>explain each weak topic back to you in their own words</i> — teaching it is the best test of understanding.</li>';
+    html+='<li>Re-running this quest will show whether the weak topics have improved.</li>';
+    html+='</ul>';
+  }
+  html+='</div>';
+
+  html+='<div class="center" style="margin-top:22px">'+
+        '<button class="btn gold" onclick="restart()">Quest Again 🔁</button></div>'+
+        '<p class="note center" style="margin-top:12px">💜 Great questing, '+nm+' — show this report to your grown-up!</p>';
+  el.innerHTML=html; window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart(){idx=0;sparkles=0;answered=false;picked=null;results.length=0;
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');render();}
+</script>
+</body>
+</html>
