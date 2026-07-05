@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light">
+<title>Class 1 Adventure Quiz</title>
+<style>
+  :root{
+    --bg1:#3a1f63; --bg2:#6a2f8f; --card:#fff7fc; --ink:#3a1750;
+    --accent:#9b5de5; --accent2:#c08cf0;
+    --gold:#ffd166; --gold2:#f4a300;
+    --green:#2ec47a; --green-bg:#e6fbf0; --wrong:#ff5d7a; --wrong-bg:#ffe9ee;
+    --muted:#7a6390; --line:#f0ddf4;
+    --easy:#3dd6c0; --med:#ffb238; --hard:#ff7ab8; --hardest:#ff5d7a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:'Trebuchet MS','Segoe UI',Verdana,system-ui,sans-serif;
+    color:var(--ink);
+    background-color:var(--bg1);
+    background-image:
+      radial-gradient(1100px 560px at 15% -10%, color-mix(in srgb, var(--accent) 55%, black) 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--accent2) 55%, black) 0%, transparent 55%),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+    padding:18px 12px 50px;
+    width:100%;
+    overflow-x:hidden;
+    transition:background-color .4s;
+  }
+  .sky{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .sky span{position:absolute;top:-30px;font-size:18px;opacity:.5;animation:fall linear infinite;}
+  @keyframes fall{0%{transform:translateY(0) rotate(0deg);opacity:0;}10%{opacity:.6;}100%{transform:translateY(108vh) rotate(180deg);opacity:0;}}
+  .wrap{max-width:760px;margin:0 auto;position:relative;z-index:1;width:100%;}
+
+  .crest{font-size:clamp(34px,9vw,46px);text-align:center;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));}
+  h1{font-size:clamp(22px,5.5vw,30px);text-align:center;color:#fff;margin:6px 0 2px;letter-spacing:.3px;
+     text-shadow:0 2px 14px rgba(0,0,0,.5);word-wrap:break-word;}
+  .sub{text-align:center;color:#f3e3fb;margin:0 0 16px;font-size:clamp(13px,3.4vw,15px);padding:0 4px;}
+
+  .panel{background:var(--card);border-radius:20px;padding:clamp(16px,4vw,26px) clamp(14px,4vw,24px);
+         box-shadow:0 18px 50px rgba(10,5,20,.5);border:2px solid rgba(255,255,255,.6);
+         width:100%;max-width:100%;}
+
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .bar{flex:1 1 140px;height:14px;background:var(--line);border-radius:99px;overflow:hidden;min-width:90px;}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;transition:width .4s;}
+  .scorechip{background:var(--ink);color:var(--gold);font-weight:bold;border-radius:99px;padding:5px 12px;font-size:13px;white-space:nowrap;flex-shrink:0;}
+
+  .tags{margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .conceptTag{display:inline-block;background:#f3e8fc;color:var(--accent);font-size:12px;border-radius:99px;padding:4px 11px;font-weight:bold;max-width:100%;word-break:break-word;}
+  .diffTag{display:inline-block;color:#fff;font-size:11px;border-radius:99px;padding:4px 11px;font-weight:bold;letter-spacing:.3px;white-space:nowrap;}
+  .diffTag.easy{background:var(--easy);color:#0a4a40;} .diffTag.med{background:var(--med);color:#5a3d00;} .diffTag.hard{background:var(--hard);color:#5a002a;} .diffTag.hardest{background:var(--hardest);}
+
+  .qtext{font-size:clamp(17px,4.6vw,20px);line-height:1.45;margin:6px 0 14px;font-weight:bold;word-wrap:break-word;}
+  .qtext .big{font-family:'Courier New',monospace;background:#f3e8fc;padding:1px 8px;border-radius:7px;}
+
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;
+       padding:12px 14px;margin:8px 0;font-size:clamp(15px,3.8vw,17px);cursor:pointer;transition:all .15s;
+       color:var(--ink);font-family:inherit;word-wrap:break-word;}
+  .opt:hover{border-color:var(--accent2);background:#fbf5ff;}
+  .opt.sel{border-color:var(--accent);background:#f4ecff;}
+  .opt.correct{border-color:var(--green);background:var(--green-bg);}
+  .opt.wrong{border-color:var(--wrong);background:var(--wrong-bg);}
+  .opt.disabled{pointer-events:none;}
+  .optkey{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;
+          background:#f3e8fc;border-radius:50%;font-weight:bold;margin-right:9px;color:var(--accent);font-size:13px;}
+
+  input.text{width:100%;padding:13px 14px;font-size:clamp(15px,3.8vw,17px);border:2px solid var(--line);
+             border-radius:14px;font-family:inherit;color:var(--ink);-webkit-appearance:none;appearance:none;}
+  input.text:focus{outline:none;border-color:var(--accent);}
+
+  .btn{background:linear-gradient(180deg,var(--accent2),var(--accent));color:#fff;border:none;border-radius:14px;
+       padding:12px 22px;font-size:clamp(14px,3.6vw,16px);font-weight:bold;cursor:pointer;font-family:inherit;
+       box-shadow:0 6px 16px rgba(0,0,0,.3);transition:transform .12s;-webkit-appearance:none;appearance:none;}
+  .btn:active{transform:translateY(1px);}
+  .btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#5a3d00;box-shadow:0 6px 16px rgba(244,163,0,.45);}
+  .btn:disabled{opacity:.4;cursor:default;transform:none;}
+  .btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--line);box-shadow:none;}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap;}
+  .qnum{color:var(--muted);font-size:13px;font-weight:bold;}
+
+  .feedback{border-radius:14px;padding:13px 15px;margin-top:14px;font-size:14px;line-height:1.5;display:none;word-wrap:break-word;}
+  .feedback.show{display:block;animation:pop .3s;}
+  @keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .feedback.ok{background:var(--green-bg);border:2px solid var(--green);}
+  .feedback.no{background:var(--wrong-bg);border:2px solid var(--wrong);}
+  .feedback b{font-size:15px;} .feedback .ans{font-family:'Courier New',monospace;background:#fff;padding:1px 6px;border-radius:6px;}
+
+  .center{text-align:center;} .center p{font-size:15px;line-height:1.6;color:var(--ink);}
+  .pill{display:inline-block;background:#f3e8fc;border-radius:99px;padding:7px 14px;margin:4px;font-size:13px;color:var(--accent);font-weight:bold;}
+  .scoreBig{font-size:clamp(40px,11vw,54px);font-weight:bold;color:var(--gold2);margin:6px 0;}
+
+  .reportItem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin:8px 0;
+              border:2px solid var(--line);background:#fff;flex-wrap:wrap;}
+  .reportItem .nm{flex:1 1 120px;font-weight:bold;font-size:14px;min-width:0;word-wrap:break-word;}
+  .reportItem .mini{height:9px;flex:1 1 70px;max-width:100px;min-width:50px;background:var(--line);border-radius:99px;overflow:hidden;}
+  .reportItem .mini i{display:block;height:100%;border-radius:99px;}
+  .reportItem .pct{width:42px;text-align:right;font-weight:bold;font-size:13px;flex-shrink:0;}
+  .badge{font-size:11px;font-weight:bold;border-radius:99px;padding:3px 9px;white-space:nowrap;flex-shrink:0;}
+  .badge.strong{background:var(--green-bg);color:#10895a;}
+  .badge.ok{background:#fff3da;color:#a9760a;}
+  .badge.weak{background:var(--wrong-bg);color:#c8345b;}
+
+  .secTitle{font-size:clamp(16px,4.2vw,18px);color:var(--ink);margin:20px 0 6px;font-weight:bold;}
+  .note{font-size:13.5px;color:var(--muted);line-height:1.55;}
+  .parentBox{background:#f8effe;border:2px dashed var(--accent2);border-radius:16px;padding:14px 16px;margin-top:10px;}
+  .parentBox h3{margin:0 0 8px;font-size:15px;color:var(--accent);}
+  .parentBox ul{margin:6px 0 0;padding-left:18px;} .parentBox li{margin:6px 0;font-size:13.5px;line-height:1.55;word-wrap:break-word;}
+  .hidden{display:none !important;}
+  .nameField{max-width:340px;margin:14px auto 0;width:100%;}
+  .nameField label{display:block;font-size:14px;font-weight:bold;color:var(--ink);margin-bottom:6px;}
+  .errline{color:var(--wrong);font-size:13px;margin-top:6px;min-height:16px;}
+  .diffLegend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0 4px;}
+  .diffLegend span{font-size:12.5px;font-weight:bold;display:inline-flex;align-items:center;}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;flex-shrink:0;}
+
+  .pickGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px;}
+  .pickCard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .15s;}
+  .pickCard:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.12);}
+  .pickCard .ic{font-size:32px;line-height:1;margin-bottom:6px;}
+  .pickCard .nm2{font-weight:bold;font-size:15px;color:var(--ink);}
+  .pickCard .bl{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4;}
+  .pickCard .cnt{font-size:11px;color:var(--accent);font-weight:bold;margin-top:6px;}
+  .themeCard{border-radius:16px;}
+  .themeCard .swatches{display:flex;justify-content:center;gap:5px;margin:8px 0 4px;}
+  .themeCard .sw{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.1);}
+  .breadcrumb{text-align:center;font-size:12.5px;color:#f3e3fb;margin-bottom:10px;}
+  .breadcrumb b{color:#fff;}
+  .linkBtn{background:none;border:none;color:var(--accent);font-weight:bold;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px;}
+
+  .missCard{background:#fffaf9;border:2px solid var(--wrong);border-radius:14px;padding:12px 14px;margin:10px 0;font-size:14px;line-height:1.55;}
+  .missCard .qn{font-weight:bold;color:var(--ink);margin-bottom:6px;}
+  .missCard .ya{color:#c8345b;} .missCard .ca{color:#10895a;}
+  .missCard .exp{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);color:var(--muted);}
+  .missCard .exp b{color:var(--ink);}
+
+  @media (max-width:420px){
+    .panel{border-radius:16px;}
+    .reportItem .nm{flex:1 1 100%;}
+    .reportItem .pct{order:3;}
+  }
+  @media (max-width:360px){
+    .scorechip{font-size:12px;padding:4px 9px;}
+  }
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<div class="wrap">
+  <div class="crest" id="crest">📚✨</div>
+  <h1 id="mainTitle">Class 1 Adventure Quiz</h1>
+  <p class="sub" id="mainSub">Pick a subject, choose your favourite theme, and start practising!</p>
+  <div class="breadcrumb hidden" id="crumb"></div>
+
+  <!-- SCREEN 0: SUBJECT PICKER -->
+  <div class="panel" id="subjectScreen">
+    <h2 style="margin:2px 0 4px;text-align:center;font-size:clamp(17px,4.5vw,20px)">Step 1 — Choose a subject</h2>
+    <p class="note center">Based on Nyra's Term 1 monthly review worksheets.</p>
+    <div class="pickGrid" id="subjectGrid"></div>
+  </div>
+
+  <!-- SCREEN 1: THEME PICKER -->
+  <div class="panel hidden" id="themeScreen">
+    <h2 style="margin:2px 0 4px;text-align:center;font-size:clamp(17px,4.5vw,20px)">Step 2 — Choose a theme</h2>
+    <p class="note center">The look, points and rewards of the quiz will change to match!</p>
+    <div class="pickGrid" id="themeGrid"></div>
+    <div class="center" style="margin-top:14px"><button class="linkBtn" onclick="backToSubjects()">← Back to subjects</button></div>
+  </div>
+
+  <!-- SCREEN 2: START / NAME -->
+  <div class="panel hidden center" id="startScreen">
+    <div style="font-size:38px" id="startIcon">✨</div>
+    <h2 style="margin:6px 0 2px;color:var(--ink);font-size:clamp(18px,4.8vw,21px)" id="startHeading">Welcome, explorer!</h2>
+    <p class="note" style="font-size:15px;color:var(--ink)" id="startDesc"></p>
+    <div class="diffLegend" id="diffLegend"></div>
+    <div class="nameField">
+      <label for="nameInput">What's your name, explorer?</label>
+      <input class="text" id="nameInput" autocomplete="off" maxlength="24" placeholder="Type your name..."
+             onkeydown="if(event.key==='Enter'){event.preventDefault();start();}">
+      <div class="errline" id="nameErr"></div>
+    </div>
+    <p class="note">📖 Read each question carefully. Tap an answer or type it, then press Check for instant feedback.</p>
+    <div style="margin-top:6px"><button class="btn gold" id="startBtn" onclick="start()">Start →</button></div>
+    <div style="margin-top:10px"><button class="linkBtn" onclick="backToThemes()">← Change theme</button></div>
+  </div>
+
+  <div class="panel hidden" id="quizScreen">
+    <div class="topbar">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="scorechip" id="scoreChip">0</div>
+    </div>
+    <div id="qbody"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="row">
+      <div class="qnum" id="qcount"></div>
+      <div>
+        <button class="btn" id="checkBtn" onclick="check()">Check ✦</button>
+        <button class="btn gold hidden" id="nextBtn" onclick="next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="resultScreen"></div>
+</div>
+
+<script>
+/* ================= HELPERS ================= */
+function norm(s){return String(s).toLowerCase().replace(/\s+/g," ").replace(/[.''",!?]+$/,"").trim();}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* ================= SUBJECTS & QUESTION BANKS ================= */
+const SUBJECTS = {
+math:{name:"Mathematics", icon:"🔢", blurb:"Numbers, ordering, before/after & comparing up to 100", questions:[
+{diff:"easy",concept:"Numbers Before/After",type:"mcq",q:"A rabbit is sitting on number 41. Which number comes just BEFORE it?",options:["40","42","39","43"],answer:0,ex:"The number just before 41 is 40 (41 − 1 = 40)."},
+{diff:"easy",concept:"Number Names",type:"text",q:"Write in words: 11 = ____",accept:["eleven"],ex:"11 is written as <span class='ans'>eleven</span>."},
+{diff:"easy",concept:"Number Names",type:"text",q:"Write in words: 18 = ____",accept:["eighteen"],ex:"18 is written as <span class='ans'>eighteen</span>."},
+{diff:"easy",concept:"Number Names",type:"text",q:"Write in words: 15 = ____",accept:["fifteen"],ex:"15 is written as <span class='ans'>fifteen</span>."},
+{diff:"easy",concept:"Number Names",type:"text",q:"Write in words: 20 = ____",accept:["twenty"],ex:"20 is written as <span class='ans'>twenty</span>."},
+{diff:"easy",concept:"Numeral Form",type:"mcq",q:"What is the numeral (figure) form for <b>fourteen</b>?",options:["15","50","51","14"],answer:3,ex:"Fourteen is written as the numeral 14."},
+{diff:"med",concept:"Numbers Between",type:"text",q:"What number comes in between: 24 ___ 26?",accept:["25"],ex:"25 comes right between 24 and 26."},
+{diff:"med",concept:"Numbers Between",type:"text",q:"What number comes in between: 67 ___ 69?",accept:["68"],ex:"68 comes right between 67 and 69."},
+{diff:"med",concept:"Comparing Numbers",type:"mcq",q:"Which symbol makes this correct?&nbsp; 25 ___ 52",options:["<",">","=","+"],answer:0,ex:"25 is smaller than 52, so we use the &lt; symbol: 25 &lt; 52."},
+{diff:"med",concept:"Comparing Numbers",type:"mcq",q:"Which symbol makes this correct?&nbsp; 63 ___ 36",options:["<",">","=","+"],answer:1,ex:"63 is bigger than 36, so we use the &gt; symbol: 63 &gt; 36."},
+{diff:"med",concept:"Comparing Numbers",type:"mcq",q:"Which symbol makes this correct?&nbsp; 44 ___ 44",options:["<",">","=","+"],answer:2,ex:"44 and 44 are equal, so we use the = symbol."},
+{diff:"med",concept:"Comparing Numbers",type:"mcq",q:"Which symbol makes this correct?&nbsp; 34 ___ 43",options:["<",">","=","+"],answer:0,ex:"34 is smaller than 43, so we use the &lt; symbol."},
+{diff:"med",concept:"Before & After",type:"text",q:"What number comes just AFTER 56?",accept:["57"],ex:"The number just after 56 is 57."},
+{diff:"med",concept:"Before & After",type:"text",q:"What number comes just BEFORE 78?",accept:["77"],ex:"The number just before 78 is 77."},
+{diff:"med",concept:"Missing Numbers",type:"text",q:"Which number is missing: 72, 73, ___, 75?",accept:["74"],ex:"Counting on from 73, the next number is 74."},
+{diff:"hard",concept:"Ascending Order",type:"text",q:"Arrange in ASCENDING order (smallest first): 73, 56, 61, 48",accept:["48, 56, 61, 73","48,56,61,73"],ex:"From smallest to largest: 48, 56, 61, 73."},
+{diff:"hard",concept:"Descending Order",type:"text",q:"Arrange in DESCENDING order (largest first): 38, 91, 74, 56",accept:["91, 74, 56, 38","91,74,56,38"],ex:"From largest to smallest: 91, 74, 56, 38."},
+{diff:"hard",concept:"Ascending Order",type:"mcq",q:"Which is the correct ASCENDING order for 57, 42, 68, 39?",options:["68, 57, 42, 39","39, 42, 57, 68","42, 39, 57, 68","39, 57, 42, 68"],answer:1,ex:"Ascending means smallest to largest: 39, 42, 57, 68."},
+{diff:"hard",concept:"Counting Down",type:"text",q:"Complete by counting down: 43, 42, ___, ___",accept:["41, 40","41,40"],ex:"Counting down from 42: 41, then 40."},
+{diff:"hard",concept:"Counting Down",type:"text",q:"Complete by counting down: 89, 88, 87, ___",accept:["86"],ex:"Counting down from 87, the next number is 86."},
+{diff:"hardest",concept:"Number Patterns",type:"text",q:"Complete the pattern: 93, ___, 95, ___, 97",accept:["94, 96","94,96"],ex:"The pattern counts up by 1 each time: 93, 94, 95, 96, 97."},
+{diff:"hardest",concept:"Before & After (Both)",type:"text",q:"Fill both blanks: ___, 74, ___ (numbers before and after 74)",accept:["73, 75","73,75"],ex:"Just before 74 is 73, and just after 74 is 75."}
+]},
+english:{name:"English", icon:"📖", blurb:"Reading comprehension, naming words (nouns) & vocabulary", questions:[
+{diff:"easy",concept:"Vocabulary (Word Box)",type:"mcq",q:"Fill in the blank using the word box (nest, garden, bird, sky, song): A little ____ sat on a tree.",options:["bird","nest","song","sky"],answer:0,ex:"A little <b>bird</b> sat on a tree — the story is about a little bird."},
+{diff:"easy",concept:"Vocabulary (Word Box)",type:"mcq",q:"It sang a sweet ____.",options:["song","garden","nest","sky"],answer:0,ex:"The bird sang a sweet <b>song</b>."},
+{diff:"easy",concept:"Vocabulary (Word Box)",type:"mcq",q:"The bird flew across the ____.",options:["sky","garden","nest","song"],answer:0,ex:"The bird flew across the <b>sky</b>."},
+{diff:"easy",concept:"Vocabulary (Word Box)",type:"mcq",q:"It looked for food in the ____.",options:["garden","sky","nest","song"],answer:0,ex:"It looked for food in the <b>garden</b>."},
+{diff:"easy",concept:"Vocabulary (Word Box)",type:"mcq",q:"Then it returned to its ____.",options:["nest","garden","sky","song"],answer:0,ex:"Birds live in a <b>nest</b>, so it returned there."},
+{diff:"med",concept:"Reading Comprehension — A Kind Girl",type:"mcq",q:"In the story 'A Kind Girl', why did Riya get up early on Sunday?",options:["To play","To help her mother in the garden","To watch TV"],answer:1,ex:"Riya got up early to help her mother water the plants in the garden."},
+{diff:"med",concept:"Reading Comprehension — A Kind Girl",type:"mcq",q:"What did Riya see near the fence?",options:["A dog","A cat","A small bird"],answer:2,ex:"Riya saw a small, hurt bird near the fence."},
+{diff:"med",concept:"Reading Comprehension — A Kind Girl",type:"text",q:"Fill in the blank: Riya kept the bird in a ____.",accept:["box"],ex:"Riya kept the bird safe in a <span class='ans'>box</span> with a soft cloth."},
+{diff:"med",concept:"Reading Comprehension — A Kind Girl",type:"text",q:"Fill in the blank: The bird flew away in the ____.",accept:["evening"],ex:"In the <span class='ans'>evening</span>, the bird flew away."},
+{diff:"hard",concept:"Nouns vs Verbs",type:"mcq",q:"Which one of these is an ACTION word (verb), NOT a naming word (noun)?",options:["run","table","pen","chair"],answer:0,ex:"'Run' is an action word. Table, pen and chair are all naming words (nouns)."},
+{diff:"hard",concept:"Nouns vs Verbs",type:"mcq",q:"Which one of these is an ACTION word (verb), NOT a naming word (noun)?",options:["bag","ball","sing","mother"],answer:2,ex:"'Sing' is an action word. Bag, ball and mother are naming words (nouns)."},
+{diff:"hard",concept:"Nouns vs Verbs",type:"mcq",q:"Which one of these is an ACTION word (verb), NOT a naming word (noun)?",options:["chair","dance","book","mother"],answer:1,ex:"'Dance' is an action word. Chair, book and mother are naming words (nouns)."},
+{diff:"hardest",concept:"Word Building",type:"text",q:"Complete the fruit name: b _ _ a n a",accept:["banana"],ex:"The missing letters spell <span class='ans'>banana</span>."},
+{diff:"hardest",concept:"Word Building",type:"text",q:"Complete the fruit name: _ a n _ o",accept:["mango"],ex:"The missing letters spell <span class='ans'>mango</span>."},
+{diff:"hardest",concept:"Word Building",type:"text",q:"Complete the vegetable name: p _ t a t o",accept:["potato"],ex:"The missing letter spells <span class='ans'>potato</span>."}
+]},
+evs:{name:"EVS", icon:"🌎", blurb:"Living & non-living things, our body & the five senses", questions:[
+{diff:"easy",concept:"Living vs Non-living",type:"mcq",q:"Which of these is a <b>LIVING</b> thing?",options:["Dog","Chair","Table","Book"],answer:0,ex:"A dog is living — it moves, breathes, eats and grows on its own. Chairs, tables and books are non-living."},
+{diff:"easy",concept:"Living vs Non-living",type:"mcq",q:"Which of these is a <b>NON-LIVING</b> thing?",options:["Cat","Ball","Bird","Plant"],answer:1,ex:"A ball is non-living — it cannot move, eat or grow on its own."},
+{diff:"easy",concept:"Characteristics of Living Things",type:"text",q:"Fill in the blank: Living things ____ on their own.",accept:["move","moves"],ex:"Living things can <span class='ans'>move</span> from one place to another all by themselves."},
+{diff:"easy",concept:"Characteristics of Living Things",type:"mcq",q:"Living things need air, water and ____ to live.",options:["Toys","Money","Food","Cars"],answer:2,ex:"Living things need air, water and food to stay alive and grow."},
+{diff:"easy",concept:"Natural Things",type:"mcq",q:"Which of these is a <b>NATURAL</b> thing?",options:["Car","Chair","Book","Sun"],answer:3,ex:"The sun is found in nature, so it is a natural thing."},
+{diff:"easy",concept:"Man-made Things",type:"mcq",q:"Which of these is <b>MAN-MADE</b>?",options:["Train","Rock","Moon","Water"],answer:0,ex:"A train is made by people, so it is man-made."},
+{diff:"easy",concept:"Senses — Sight",type:"text",q:"Fill in the blank: We see with our ____.",accept:["eyes","eye"],ex:"We see with our <span class='ans'>eyes</span>!"},
+{diff:"easy",concept:"Senses — Hearing",type:"mcq",q:"We hear with our:",options:["Nose","Ears","Eyes","Skin"],answer:1,ex:"We hear sounds with our ears."},
+{diff:"easy",concept:"Senses — Smell",type:"text",q:"Fill in the blank: We smell with our ____.",accept:["nose"],ex:"We smell things with our <span class='ans'>nose</span>."},
+{diff:"easy",concept:"Senses — Taste",type:"mcq",q:"We taste food with our:",options:["Skin","Hands","Tongue","Ears"],answer:2,ex:"We taste food with our tongue — sweet, sour, salty or bitter!"},
+{diff:"easy",concept:"Hands & Their Uses",type:"mcq",q:"We hold a pencil with the help of our ____.",options:["Ears","Fingers","Nose","Eyes"],answer:1,ex:"We use our fingers to hold and grip things like a pencil."},
+{diff:"easy",concept:"Living Things Need",type:"mcq",q:"What do fish need to breathe?",options:["Air","Soil","Food"],answer:0,ex:"Like all living things, fish need air (oxygen) to breathe — they take it from the water."},
+{diff:"med",concept:"Characteristics of Living Things",type:"mcq",q:"Which of these is something that <b>ALL</b> living things do?",options:["Fly","Swim","Bark","Breathe"],answer:3,ex:"Not all living things fly, swim or bark — but every living thing breathes."},
+{diff:"med",concept:"Characteristics of Non-living Things",type:"text",q:"Fill in the blank: Non-living things cannot move, eat or ____ on their own.",accept:["grow"],ex:"Non-living things cannot move, eat or <span class='ans'>grow</span> by themselves."},
+{diff:"med",concept:"Natural vs Man-made (Reasoning)",type:"mcq",q:"Toys, books and clothes are man-made because:",options:["They are made by people","They grow in nature","They can move on their own","They need food"],answer:0,ex:"Man-made things are things that people make, like toys, books and clothes."},
+{diff:"med",concept:"Hands & Legs",type:"mcq",q:"Which activity do we do with our <b>HANDS</b>?",options:["Walk","Write","Smell","Hear"],answer:1,ex:"Our hands help us to eat, clap, write and hold things."},
+{diff:"med",concept:"Hands & Legs",type:"mcq",q:"Which of these do our <b>LEGS</b> help us do?",options:["Clap","Talk","Run","Smell"],answer:2,ex:"Our legs help us to walk, run, skip and kick."},
+{diff:"med",concept:"Mouth & Neck",type:"mcq",q:"Our ____ helps the head to move.",options:["Neck","Hand","Foot","Ear"],answer:0,ex:"Our neck helps our head to move — nod, turn and tilt."},
+{diff:"med",concept:"Senses — Touch",type:"mcq",q:"Which sense organ do we use to <b>FEEL</b> a soft toy?",options:["Skin","Eyes","Ears","Tongue"],answer:0,ex:"We touch and feel things with our skin."},
+{diff:"med",concept:"Five Sense Organs",type:"text",q:"Fill in the blank: We have ____ sense organs.",accept:["five","5"],ex:"We have <span class='ans'>five</span> sense organs: eyes, ears, nose, tongue and skin."},
+{diff:"med",concept:"Odd One Out (Natural vs Man-made)",type:"mcq",q:"Odd one out: river, sun, mountain, cycle — which one does NOT belong?",options:["River","Sun","Mountain","Cycle"],answer:3,ex:"River, sun and mountain are natural things. A cycle is man-made, so it is the odd one out."},
+{diff:"med",concept:"Odd One Out (Living Things)",type:"mcq",q:"Odd one out: boy, girl, pencil, uncle — which one is NOT a living thing?",options:["Boy","Girl","Pencil","Uncle"],answer:2,ex:"Boy, girl and uncle are people (living things). A pencil is non-living."},
+{diff:"med",concept:"Odd One Out (Sense Organs)",type:"mcq",q:"Odd one out: eyes, nose, head, ears — which one is NOT a sense organ?",options:["Eyes","Nose","Head","Ears"],answer:2,ex:"Eyes, nose and ears are sense organs. The head is not itself a sense organ."},
+{diff:"hard",concept:"Living/Non-living Reasoning",type:"mcq",q:"A dog runs around, but a teddy bear does not move at all. This is because:",options:["The teddy bear is broken","The dog is non-living","The dog is a living thing and the teddy bear is non-living","The teddy bear is alive too"],answer:2,ex:"The dog is living — it can move on its own. The teddy bear is non-living, so it cannot move by itself."},
+{diff:"hard",concept:"Living/Non-living Reasoning",type:"mcq",q:"Which one of these CANNOT be done by a non-living thing?",options:["Sit still","Stay in a cupboard","Be touched","Grow and have babies of its own"],answer:3,ex:"Only living things can grow and produce more of their own kind."},
+{diff:"hard",concept:"Fun Body Facts",type:"text",q:"Fill in the blank: The largest sense organ in our body is the ____.",accept:["skin"],ex:"Our <span class='ans'>skin</span> is the largest sense organ in our whole body."},
+{diff:"hard",concept:"Hands & Legs Together",type:"mcq",q:"Which body parts do we use TOGETHER to swim and dance?",options:["Hands and legs","Eyes and ears","Nose and tongue","Skin and hair"],answer:0,ex:"We use both our hands and legs together to swim and dance."},
+{diff:"hard",concept:"Living vs Non-living",type:"mcq",q:"True or False: All living things are natural things.",options:["True","False"],answer:0,ex:"True! Every living thing is a natural thing. But not every natural thing is alive (like rocks and water)."},
+{diff:"hardest",concept:"Senses — Touch (Reasoning)",type:"mcq",q:"Someone touches a hot cup by mistake. What will they feel right away?",options:["Nothing at all","Pain, because their skin helps them feel things","A nice cool feeling","They will not notice"],answer:1,ex:"Our skin helps us feel things, including heat and pain."},
+{diff:"hardest",concept:"Living/Non-living Reasoning",type:"mcq",q:"A rock sits in the garden for years without changing. A plant in the same garden grows taller every year. What does this tell us?",options:["Both are non-living","The rock is living and the plant is not","The plant is a living thing and the rock is non-living","Rocks and plants are the same"],answer:2,ex:"Growing is a sign of being alive. The plant grows, so it is living; the rock does not grow, so it is non-living."},
+{diff:"hardest",concept:"Living/Non-living Reasoning",type:"text",q:"Fill in the blank: A teddy bear cannot eat, breathe or grow because it is a ____ thing.",accept:["non-living","nonliving","non living"],ex:"A teddy bear is a <span class='ans'>non-living</span> thing."},
+{diff:"hardest",concept:"Natural vs Man-made (Reasoning)",type:"mcq",q:"Which set correctly groups things by NATURAL vs MAN-MADE?",options:["Natural: chair, car | Man-made: sun, rock","Natural: train, book | Man-made: moon, sun","Natural: clothes, paper | Man-made: rocks, water","Natural: sun, water | Man-made: chair, train"],answer:3,ex:"Sun and water are found in nature (natural). Chair and train are made by people (man-made)."}
+]},
+hindi:{name:"Hindi", icon:"अ", blurb:"Lesson 1 letters अ, आ and their words", questions:[
+{diff:"easy",concept:"अ words",type:"mcq",q:"Which word means 'ginger' and starts with अ?",options:["अदरक","आम","आग","अजगर"],answer:0,ex:"अदरक (adrak) means ginger."},
+{diff:"easy",concept:"अ words",type:"mcq",q:"अजगर means:",options:["Python (a snake)","Elephant","Rabbit","Fish"],answer:0,ex:"अजगर (ajgar) means python."},
+{diff:"easy",concept:"अ words",type:"mcq",q:"अचकन means:",options:["Long coat","Snake","Ginger","Newspaper"],answer:0,ex:"अचकन (achkan) means a long coat."},
+{diff:"easy",concept:"आ words",type:"mcq",q:"आम means:",options:["Mango","Potato","Fire","Mirror"],answer:0,ex:"आम (aam) means mango."},
+{diff:"easy",concept:"आ words",type:"mcq",q:"आग means:",options:["Fire","Water","Air","Ice"],answer:0,ex:"आग (aag) means fire."},
+{diff:"med",concept:"अ words",type:"mcq",q:"Which word means 'newspaper'?",options:["अखबार","अनार","आईना","आलू"],answer:0,ex:"अखबार (akhbaar) means newspaper."},
+{diff:"med",concept:"अ words",type:"mcq",q:"अनार means:",options:["Pomegranate","Mirror","Potato","Coat"],answer:0,ex:"अनार (anaar) means pomegranate."},
+{diff:"med",concept:"आ words",type:"mcq",q:"आलू means:",options:["Potato","Mango","Mirror","Ginger"],answer:0,ex:"आलू (aaloo) means potato."},
+{diff:"med",concept:"आ words",type:"mcq",q:"आईना means:",options:["Mirror","Potato","Coat","Fire"],answer:0,ex:"आईना (aaina) means mirror."},
+{diff:"med",concept:"Letter Recognition",type:"text",q:"Which letter (अ or आ) does the word अदरक (ginger) start with? Type अ or आ.",accept:["अ"],ex:"अदरक starts with the letter <span class='ans'>अ</span>."}
+]},
+kannada:{name:"Kannada", icon:"ಅ", blurb:"Counting in Kannada numerals & letter recognition", questions:[
+{diff:"easy",concept:"Kannada Numerals — Counting",type:"mcq",q:"Count the leaves: 🍃🍃🍃🍃🍃 — how many are there, written as a Kannada numeral?",options:["೩","೪","೫","೬"],answer:2,ex:"There are 5 leaves, and 5 in Kannada numerals is ೫."},
+{diff:"easy",concept:"Kannada Numerals — Counting",type:"mcq",q:"Count the spoons: 🥄🥄🥄🥄🥄🥄🥄 — how many, in Kannada numerals?",options:["೫","೬","೭","೮"],answer:2,ex:"There are 7 spoons, and 7 in Kannada numerals is ೭."},
+{diff:"easy",concept:"Kannada Numerals — Counting",type:"mcq",q:"Count the drums: 🥁🥁 — how many, in Kannada numerals?",options:["೧","೨","೩","೪"],answer:1,ex:"There are 2 drums, and 2 in Kannada numerals is ೨."},
+{diff:"easy",concept:"Kannada Numerals — Counting",type:"mcq",q:"Count the apples: 🍎🍎🍎 — how many, in Kannada numerals?",options:["೨","೩","೪","೫"],answer:1,ex:"There are 3 apples, and 3 in Kannada numerals is ೩."},
+{diff:"easy",concept:"Kannada Numerals — Counting",type:"mcq",q:"Count the trees: 🌳🌳🌳🌳 — how many, in Kannada numerals?",options:["೩","೪","೫","೬"],answer:1,ex:"There are 4 trees, and 4 in Kannada numerals is ೪."},
+{diff:"med",concept:"Kannada Letters",type:"mcq",q:"Which Kannada letter matches the English sound 'A'?",options:["ಅ","ಆ","ಇ","ಈ"],answer:0,ex:"'A' matches the Kannada letter ಅ."},
+{diff:"med",concept:"Kannada Letters",type:"mcq",q:"Which Kannada letter matches the English sound 'Sa'?",options:["ಶ","ಷ","ಸ","ಜ"],answer:2,ex:"'Sa' matches the Kannada letter ಸ."},
+{diff:"med",concept:"Kannada Letters",type:"mcq",q:"Which Kannada letter matches the English sound 'Da'?",options:["ಡ","ದ","ಧ","ತ"],answer:1,ex:"'Da' matches the Kannada letter ದ."},
+{diff:"med",concept:"Kannada Letters",type:"mcq",q:"Which Kannada letter matches the English sound 'Ra'?",options:["ಳ","ಲ","ರ","ಱ"],answer:2,ex:"'Ra' matches the Kannada letter ರ."},
+{diff:"med",concept:"Kannada Letters",type:"mcq",q:"Which Kannada letter matches the English sound 'Ga'?",options:["ಘ","ಕ","ಗ","ಖ"],answer:2,ex:"'Ga' matches the Kannada letter ಗ."},
+{diff:"hard",concept:"Fill the Blank Letter",type:"mcq",q:"ಗರಗ + ___ = ಗರಗಸ (saw). Which letter completes the word?",options:["ಅ","ದ","ಸ"],answer:2,ex:"ಗರಗ + ಸ = ಗರಗಸ, meaning 'saw' (the tool)."}
+]}
+};
+
+/* ================= THEMES ================= */
+const THEMES = {
+avatar:{
+  name:"Avatar", crest:"🌊🔥🪨💨", title:"Elemental Quiz Quest",
+  vars:{bg1:"#0b2a3d",bg2:"#123a52",card:"#f4faf9",ink:"#0f2e3d",accent:"#2f9fd8",accent2:"#1c6f9c",
+        gold:"#ffcf5c",gold2:"#e0a312",green:"#2ec47a",greenbg:"#e6fbf0",wrong:"#ff5d7a",wrongbg:"#ffe9ee",
+        muted:"#587284",line:"#dbe9ee",easy:"#8fd6c1",med:"#3fa7d6",hard:"#6fae43",hardest:"#e0521f"},
+  pointIcon:"🌀", pointLabel:"Avatar Energy",
+  checkText:"Bend It! 🌀", correctTitle:"🌟 Avatar State! Correct!", wrongTitle:"💨 Missed — here's the wisdom:",
+  resultTitle:"Avatar's Journal 📘", startIcon:"🌪️",
+  floatIcons:["🌊","🔥","🪨","💨","⚡"],
+  tiers:{easy:{label:"Air Nomads",emoji:"🌬️"},med:{label:"Water Tribe",emoji:"💧"},hard:{label:"Earth Kingdom",emoji:"🪨"},hardest:{label:"Fire Nation",emoji:"🔥"}},
+  msgs:[
+    {min:90,emoji:"👑🌪️",msg:"Incredible, {nm}! You've reached the Avatar State — true mastery of every element!"},
+    {min:70,emoji:"💧🔥",msg:"Great work, {nm} — a few elements still need practice below."},
+    {min:50,emoji:"🪨💨",msg:"Good effort, {nm}! The journal below shows which elements to train next."},
+    {min:0,emoji:"🌱🌀",msg:"Nice first try, {nm} — the journal below shows exactly what to practise."}
+  ]
+},
+ninjago:{
+  name:"Ninjago", crest:"🥷⚡", title:"Ninja Training Quiz",
+  vars:{bg1:"#080d18",bg2:"#0f2233",card:"#f6f8fc",ink:"#15202e",accent:"#e0a312",accent2:"#ffcf3f",
+        gold:"#ffcf3f",gold2:"#e0a312",green:"#27c06a",greenbg:"#e4faef",wrong:"#ff5d7a",wrongbg:"#ffeef2",
+        muted:"#5d6a7d",line:"#dde6f0",easy:"#3dd6c0",med:"#3fa7d6",hard:"#e2483b",hardest:"#5b5f6b"},
+  pointIcon:"⚡", pointLabel:"Spinjitzu Power",
+  checkText:"Ninja-GO! ⚔️", correctTitle:"🥷 Ninja-GO! Perfect strike!", wrongTitle:"⚡ Missed! Train this move:",
+  resultTitle:"Master Wu's Scroll 📜", startIcon:"🐉",
+  floatIcons:["⚡","🥷","🐉","❄️","🔥"],
+  tiers:{easy:{label:"White Belt",emoji:"🥋"},med:{label:"Blue Belt",emoji:"🔵"},hard:{label:"Red Belt",emoji:"🔴"},hardest:{label:"Black Belt",emoji:"⚫"}},
+  msgs:[
+    {min:90,emoji:"🐉👑",msg:"Outstanding, {nm}! A true Ninjago legend!"},
+    {min:70,emoji:"🥷⚡",msg:"Brilliant, {nm}! Your Spinjitzu is strong."},
+    {min:50,emoji:"💪🔥",msg:"Good fight, {nm}! A little more training and you'll master it."},
+    {min:0,emoji:"🌱⚔️",msg:"Every ninja trains hard, {nm} — the scroll below shows what to practise."}
+  ]
+},
+unicorn:{
+  name:"Unicorn", crest:"🦄🌈", title:"Unicorn Quest",
+  vars:{bg1:"#3a1f63",bg2:"#6a2f8f",card:"#fff7fc",ink:"#3a1750",accent:"#9b5de5",accent2:"#c08cf0",
+        gold:"#ffd166",gold2:"#f4a300",green:"#2ec47a",greenbg:"#e6fbf0",wrong:"#ff5d7a",wrongbg:"#ffe9ee",
+        muted:"#7a6390",line:"#f0ddf4",easy:"#3dd6c0",med:"#ffb238",hard:"#ff7ab8",hardest:"#ff5d7a"},
+  pointIcon:"🦄", pointLabel:"Sparkles",
+  checkText:"Check ✦", correctTitle:"🌟 Magical! Correct!", wrongTitle:"Almost — here's the magic answer:",
+  resultTitle:"Magical Report 🏆", startIcon:"🦄",
+  floatIcons:["🦄","✨","🌈","⭐","💫"],
+  tiers:{easy:{label:"Rainbow Meadow",emoji:"🌸"},med:{label:"Unicorn Forest",emoji:"🦄"},hard:{label:"Sparkle Mountain",emoji:"✨"},hardest:{label:"Stardust Castle",emoji:"🌟"}},
+  msgs:[
+    {min:90,emoji:"🏆🦄",msg:"Incredible questing, {nm}! You explored the whole kingdom like a true Unicorn Scholar!"},
+    {min:70,emoji:"🌟🌈",msg:"Great quest, {nm} — really strong work! A few sparkles left to collect below."},
+    {min:50,emoji:"💪✨",msg:"Good adventuring, {nm}! The report below shows which lands to revisit."},
+    {min:0,emoji:"🌱🦄",msg:"Nice first quest, {nm} — the report below shows exactly what to practise next."}
+  ]
+}
+};
+
+if(typeof window!=='undefined'){window.SUBJECTS=SUBJECTS;window.THEMES=THEMES;}
+
+/* ================= STATE ================= */
+let chosenSubject=null, chosenTheme=null, QUESTIONS=[];
+let idx=0, points=0, answered=false, picked=null, childName="Explorer";
+const results=[];
+
+/* ================= BUILD PICKERS ================= */
+function buildSubjectGrid(){
+  const grid=document.getElementById('subjectGrid'); grid.innerHTML='';
+  Object.keys(SUBJECTS).forEach(function(key){
+    const s=SUBJECTS[key];
+    const card=document.createElement('div');
+    card.className='pickCard';
+    card.innerHTML='<div class="ic">'+s.icon+'</div><div class="nm2">'+s.name+'</div>'+
+      '<div class="bl">'+s.blurb+'</div><div class="cnt">'+s.questions.length+' questions</div>';
+    card.onclick=function(){selectSubject(key);};
+    grid.appendChild(card);
+  });
+}
+function buildThemeGrid(){
+  const grid=document.getElementById('themeGrid'); grid.innerHTML='';
+  Object.keys(THEMES).forEach(function(key){
+    const t=THEMES[key];
+    const card=document.createElement('div');
+    card.className='pickCard themeCard';
+    card.innerHTML='<div class="ic">'+t.crest+'</div><div class="nm2">'+t.name+'</div>'+
+      '<div class="swatches"><span class="sw" style="background:'+t.vars.accent+'"></span>'+
+      '<span class="sw" style="background:'+t.vars.gold+'"></span>'+
+      '<span class="sw" style="background:'+t.vars.accent2+'"></span></div>'+
+      '<div class="bl">'+t.pointIcon+' '+t.pointLabel+'</div>';
+    card.onclick=function(){selectTheme(key);};
+    grid.appendChild(card);
+  });
+}
+
+function selectSubject(key){
+  chosenSubject=key;
+  document.getElementById('subjectScreen').classList.add('hidden');
+  document.getElementById('themeScreen').classList.remove('hidden');
+  updateCrumb();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToSubjects(){
+  chosenSubject=null;
+  document.getElementById('themeScreen').classList.add('hidden');
+  document.getElementById('subjectScreen').classList.remove('hidden');
+  updateCrumb();
+}
+function backToThemes(){
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('themeScreen').classList.remove('hidden');
+  updateCrumb();
+}
+function updateCrumb(){
+  const c=document.getElementById('crumb');
+  if(!chosenSubject){c.classList.add('hidden');c.innerHTML='';return;}
+  c.classList.remove('hidden');
+  let html='Subject: <b>'+SUBJECTS[chosenSubject].name+'</b>';
+  if(chosenTheme) html+=' &nbsp;•&nbsp; Theme: <b>'+THEMES[chosenTheme].name+'</b>';
+  c.innerHTML=html;
+}
+
+function selectTheme(key){
+  chosenTheme=key;
+  applyTheme(key);
+  document.getElementById('themeScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+  const s=SUBJECTS[chosenSubject];
+  document.getElementById('startHeading').textContent='Welcome, little explorer!';
+  document.getElementById('startDesc').innerHTML=s.questions.length+' fun questions about <b>'+s.name+'</b> — from Nyra\'s Term 1 revision worksheets. '+
+    'The questions get trickier as you go!';
+  updateCrumb();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function applyTheme(key){
+  const t=THEMES[key]; const v=t.vars; const root=document.documentElement.style;
+  root.setProperty('--bg1',v.bg1); root.setProperty('--bg2',v.bg2); root.setProperty('--card',v.card);
+  root.setProperty('--ink',v.ink); root.setProperty('--accent',v.accent); root.setProperty('--accent2',v.accent2);
+  root.setProperty('--gold',v.gold); root.setProperty('--gold2',v.gold2);
+  root.setProperty('--green',v.green); root.setProperty('--green-bg',v.greenbg);
+  root.setProperty('--wrong',v.wrong); root.setProperty('--wrong-bg',v.wrongbg);
+  root.setProperty('--muted',v.muted); root.setProperty('--line',v.line);
+  root.setProperty('--easy',v.easy); root.setProperty('--med',v.med); root.setProperty('--hard',v.hard); root.setProperty('--hardest',v.hardest);
+  document.getElementById('crest').textContent=t.crest;
+  document.getElementById('mainTitle').textContent=t.title;
+  document.getElementById('mainSub').textContent='Playing '+(chosenSubject?SUBJECTS[chosenSubject].name:'')+' in '+t.name+' mode!';
+  document.getElementById('startIcon').textContent=t.startIcon;
+  document.getElementById('checkBtn').textContent=t.checkText;
+  buildFloaters(t.floatIcons);
+  buildDiffLegend(t);
+}
+
+function buildDiffLegend(t){
+  const el=document.getElementById('diffLegend'); el.innerHTML='';
+  const present={}; SUBJECTS[chosenSubject].questions.forEach(function(q){present[q.diff]=true;});
+  ['easy','med','hard','hardest'].forEach(function(d){
+    if(!present[d])return;
+    const tier=t.tiers[d];
+    const span=document.createElement('span');
+    span.innerHTML='<span class="dot" style="background:var(--'+d+')"></span>'+tier.emoji+' '+tier.label;
+    el.appendChild(span);
+  });
+}
+
+function buildFloaters(icons){
+  const sky=document.getElementById('sky'); sky.innerHTML='';
+  for(let i=0;i<16;i++){
+    const e=document.createElement('span');
+    e.textContent=icons[Math.floor(Math.random()*icons.length)];
+    e.style.left=Math.random()*96+'%';
+    e.style.fontSize=(14+Math.random()*16)+'px';
+    e.style.animationDuration=(8+Math.random()*10)+'s';
+    e.style.animationDelay=(Math.random()*10)+'s';
+    sky.appendChild(e);
+  }
+}
+
+/* ================= START & QUIZ ================= */
+function start(){
+  const inp=document.getElementById('nameInput');
+  const val=(inp.value||"").trim();
+  if(val===""){
+    document.getElementById('nameErr').textContent='Please type your name to begin.';
+    inp.focus(); return;
+  }
+  childName=esc(val);
+  QUESTIONS=SUBJECTS[chosenSubject].questions.slice();
+  if(typeof window!=='undefined')window.QUESTIONS=QUESTIONS;
+  idx=0; points=0; results.length=0;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');
+  render();
+}
+
+function render(){
+  answered=false; picked=null;
+  const t=THEMES[chosenTheme];
+  const q=QUESTIONS[idx];
+  document.getElementById('fill').style.width=((idx)/QUESTIONS.length*100)+'%';
+  document.getElementById('scoreChip').textContent=t.pointIcon+' '+points;
+  document.getElementById('qcount').textContent='Question '+(idx+1)+' of '+QUESTIONS.length;
+  const tier=t.tiers[q.diff];
+  let html='<div class="tags"><span class="conceptTag">'+q.concept+'</span>'+
+           '<span class="diffTag '+q.diff+'">'+tier.emoji+' '+tier.label.toUpperCase()+'</span></div>'+
+           '<div class="qtext">'+q.q+'</div>';
+  if(q.type==='mcq'){
+    q.options.forEach(function(o,i){var key=String.fromCharCode(65+i);
+      html+='<button class="opt" data-i="'+i+'" onclick="pick(this)"><span class="optkey">'+key+'</span>'+o+'</button>';});
+  } else {
+    html+='<input class="text" id="answerInput" autocomplete="off" placeholder="Type your answer..." '+
+          'onkeydown="if(event.key===\'Enter\'){event.preventDefault();check();}">';
+  }
+  document.getElementById('qbody').innerHTML=html;
+  const fb=document.getElementById('fb'); fb.className='feedback'; fb.innerHTML='';
+  document.getElementById('checkBtn').classList.remove('hidden');
+  document.getElementById('checkBtn').disabled=false;
+  document.getElementById('checkBtn').textContent=t.checkText;
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('nextBtn').textContent=(idx===QUESTIONS.length-1)?'See My Report 📊':'Next →';
+  const inp=document.getElementById('answerInput'); if(inp) inp.focus();
+}
+
+function pick(el){if(answered)return;picked=parseInt(el.dataset.i,10);document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('sel');});el.classList.add('sel');}
+
+function check(){
+  if(answered)return;
+  const t=THEMES[chosenTheme];
+  const q=QUESTIONS[idx]; let correct=false, given='', correctDisplay='';
+  if(q.type==='mcq'){
+    if(picked===null){shake();return;}
+    given=q.options[picked]; correct=(picked===q.answer); correctDisplay=q.options[q.answer];
+    document.querySelectorAll('.opt').forEach(function(o,i){o.classList.add('disabled');
+      if(i===q.answer)o.classList.add('correct'); if(i===picked&&!correct)o.classList.add('wrong');});
+  } else {
+    const inp=document.getElementById('answerInput'); given=inp.value; correctDisplay=q.accept[0];
+    if(norm(given)===''){shake();return;}
+    const n=norm(given); correct=q.accept.some(function(a){return norm(a)===n;});
+    inp.disabled=true; inp.style.borderColor=correct?'var(--green)':'var(--wrong)';
+  }
+  answered=true;
+  results.push({concept:q.concept, diff:q.diff, correct:correct, qHTML:q.q, given:given, correctDisplay:correctDisplay, ex:q.ex, type:q.type});
+  if(correct)points+=10;
+  document.getElementById('scoreChip').textContent=t.pointIcon+' '+points;
+  const fb=document.getElementById('fb');
+  if(correct){fb.className='feedback ok show';fb.innerHTML='<b>'+t.correctTitle+'</b> +10 '+t.pointIcon+'<br>'+q.ex;}
+  else{fb.className='feedback no show';
+    const ya=(q.type==='mcq')?('<span class="ans">'+esc(given)+'</span>'):('"<span class="ans">'+esc(given||'(blank)')+'</span>"');
+    fb.innerHTML='<b>'+t.wrongTitle+'</b><br>You answered '+ya+'.<br>'+q.ex;}
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').focus();
+}
+function shake(){const b=document.getElementById('checkBtn');b.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:250});}
+function next(){idx++; if(idx>=QUESTIONS.length){showResult();return;} render();}
+
+/* ================= RESULTS ================= */
+function showResult(){
+  document.getElementById('quizScreen').classList.add('hidden');
+  const el=document.getElementById('resultScreen'); el.classList.remove('hidden');
+  const t=THEMES[chosenTheme];
+  const total=QUESTIONS.length, got=results.filter(function(r){return r.correct;}).length, pct=Math.round(got/total*100);
+  const nm=childName;
+
+  // difficulty aggregate (only tiers present in this subject)
+  const diffs={};
+  results.forEach(function(r){diffs[r.diff]=diffs[r.diff]||{c:0,t:0}; diffs[r.diff].t++; if(r.correct)diffs[r.diff].c++;});
+
+  // concept aggregate
+  const cAgg={};
+  results.forEach(function(r){cAgg[r.concept]=cAgg[r.concept]||{c:0,t:0};cAgg[r.concept].t++;if(r.correct)cAgg[r.concept].c++;});
+
+  let chosenMsg=t.msgs[t.msgs.length-1];
+  for(let i=0;i<t.msgs.length;i++){ if(pct>=t.msgs[i].min){chosenMsg=t.msgs[i]; break;} }
+  const msg=chosenMsg.msg.replace(/\{nm\}/g,nm);
+
+  let html='<div class="center"><div style="font-size:42px">'+chosenMsg.emoji+'</div>'+
+    '<h2 style="margin:4px 0;color:var(--ink);font-size:clamp(18px,4.8vw,22px)">'+nm+"'s "+t.resultTitle+'</h2>'+
+    '<div class="scoreBig">'+got+' / '+total+'</div>'+
+    '<div class="pill">'+t.pointIcon+' '+points+' '+t.pointLabel+'</div> <div class="pill">'+pct+'% correct</div>'+
+    '<p style="margin-top:10px">'+msg+'</p></div>';
+
+  html+='<div class="secTitle">📊 How they did by difficulty</div>';
+  ['easy','med','hard','hardest'].forEach(function(d){
+    if(!diffs[d])return;
+    const x=diffs[d]; const p=x.t?Math.round(x.c/x.t*100):0;
+    const tier=t.tiers[d];
+    html+='<div class="reportItem"><div class="nm">'+tier.emoji+' '+tier.label+'</div>'+
+          '<div class="mini"><i style="width:'+p+'%;background:var(--'+d+')"></i></div>'+
+          '<div class="pct">'+x.c+'/'+x.t+'</div></div>';
+  });
+
+  html+='<div class="secTitle">👨‍👩‍👧 Parent Report — concept by concept</div>';
+  html+='<p class="note">Each topic is marked below. <b style="color:#c8345b">Practise</b> = needs focused study, '+
+        '<b style="color:#a9760a">Almost</b> = nearly there, <b style="color:#10895a">Strong</b> = solid.</p>';
+  const order=Object.keys(cAgg).sort(function(a,b){return (cAgg[a].c/cAgg[a].t)-(cAgg[b].c/cAgg[b].t);});
+  order.forEach(function(cn){
+    const d=cAgg[cn]; const p=Math.round(d.c/d.t*100);
+    let badge,cls,color;
+    if(p>=100){badge='Strong ⭐';cls='strong';color='var(--green)';}
+    else if(p>=50){badge='Almost';cls='ok';color='var(--gold2)';}
+    else {badge='Practise';cls='weak';color='var(--wrong)';}
+    html+='<div class="reportItem"><div class="nm">'+cn+'</div>'+
+          '<div class="mini"><i style="width:'+p+'%;background:'+color+'"></i></div>'+
+          '<div class="pct">'+d.c+'/'+d.t+'</div>'+
+          '<span class="badge '+cls+'">'+badge+'</span></div>';
+  });
+
+  // ---- REVIEW YOUR ANSWERS (wrong questions, child's choice vs correct + explanation) ----
+  const wrongOnes=results.filter(function(r){return !r.correct;});
+  html+='<div class="secTitle">📋 Review Your Answers</div>';
+  if(wrongOnes.length===0){
+    html+='<p class="note">🎉 '+nm+' answered <b>every question correctly</b> — nothing to review this time!</p>';
+  } else {
+    html+='<p class="note">Here is exactly what '+nm+' got wrong, what they chose, and the correct answer with an explanation.</p>';
+    wrongOnes.forEach(function(r,i){
+      const ya=(r.type==='mcq')?esc(r.given):('"'+(esc(r.given)||'(left blank)')+'"');
+      html+='<div class="missCard"><div class="qn">Q'+(i+1)+'. '+r.qHTML+'</div>'+
+            '<div class="ya">✗ '+nm+' chose: '+ya+'</div>'+
+            '<div class="ca">✓ Correct answer: '+esc(r.correctDisplay)+'</div>'+
+            '<div class="exp"><b>Why:</b> '+r.ex+'</div></div>';
+    });
+  }
+
+  const trueWeak=order.filter(function(cn){return Math.round(cAgg[cn].c/cAgg[cn].t*100)<50;});
+  const partial=order.filter(function(cn){var p=Math.round(cAgg[cn].c/cAgg[cn].t*100);return p>=50&&p<100;});
+  html+='<div class="parentBox"><h3>📌 How to study this together</h3>';
+  if(trueWeak.length===0&&partial.length===0){
+    html+='<p class="note" style="margin:0">🎉 '+nm+' answered <b>every concept correctly</b>. The whole revision looks solid — '+
+          'you could move on to another subject, or re-run this quiz for speed and confidence.</p>';
+  } else {
+    html+='<ul>';
+    if(trueWeak.length){html+='<li><b>Focus first (weak):</b> '+trueWeak.join('; ')+'. Revisit these topics together, then redo this quiz.</li>';}
+    if(partial.length){html+='<li><b>Quick review (almost there):</b> '+partial.join('; ')+'. A short recap should lock these in.</li>';}
+    html+='<li>Tip: ask your child to <i>explain each weak topic back to you in their own words</i> — teaching it is the best test of understanding.</li>';
+    html+='<li>Re-running this quiz will show whether the weak topics have improved.</li>';
+    html+='</ul>';
+  }
+  html+='</div>';
+
+  html+='<div class="center" style="margin-top:22px">'+
+        '<button class="btn gold" onclick="restart()">Play Again 🔁</button> '+
+        '<button class="btn ghost" onclick="changeSubject()">Choose Another Subject</button></div>'+
+        '<p class="note center" style="margin-top:12px">Great work, '+nm+' — show this report to your grown-up!</p>';
+  el.innerHTML=html; window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart(){
+  idx=0;points=0;answered=false;picked=null;results.length=0;
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');render();
+}
+function changeSubject(){
+  chosenSubject=null; chosenTheme=null;
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('subjectScreen').classList.remove('hidden');
+  document.getElementById('crest').textContent='📚✨';
+  document.getElementById('mainTitle').textContent='Class 1 Adventure Quiz';
+  document.getElementById('mainSub').textContent='Pick a subject, choose your favourite theme, and start practising!';
+  updateCrumb();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================= INIT ================= */
+buildSubjectGrid();
+buildThemeGrid();
+</script>
+</body>
+</html>
